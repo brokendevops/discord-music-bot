@@ -16,10 +16,8 @@ intents.voice_states = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 spotify = spotipy.Spotify(auth_manager=SpotifyClientCredentials(
-    client_id='4b256d9e326c4b699c27de65a4798a22',
-    client_secret='1c98b7a7d8dd4ca2987057e1353e62c8'
-))
-
+    client_id=os.getenv('SPOTIFY_CLIENT_ID'),
+    client_secret=os.getenv('SPOTIFY_CLIENT_SECRET')))
 # yt-dlp ayarları
 ytdl_format_options = {
     'format': 'bestaudio/best',
@@ -60,13 +58,11 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
     @classmethod
     async def from_url(cls, url, *, loop=None, stream=True):
-        print(f"🔍 from_url çağrıldı: {url}")
         loop = loop or asyncio.get_event_loop()
 
         try:
             data = await loop.run_in_executor(
                 None, lambda: ytdl.extract_info(url, download=False))
-            print(f"📦 yt-dlp data alındı")
         except Exception as e:
             print(f"yt-dlp hatası: {e}")
             return None
@@ -138,14 +134,10 @@ async def play_next(ctx):
 
 
 async def play_song(ctx, url):
-    print(f"🎵 play_song çağrıldı! URL: {url}")
     try:
         player = await YTDLSource.from_url(url, loop=bot.loop, stream=True)
-        print(f"✅ Player oluşturuldu: {player.title}")
         ctx.voice_client.play(
             player, after=lambda e: bot.loop.create_task(play_next(ctx)))
-        print(f"🎶 play() çağrıldı!") 
-        print(f"🔊 voice_client.is_playing(): {ctx.voice_client.is_playing()}")  
 
         # Kaynak belirleme
         source = "🔴 YouTube"
@@ -397,4 +389,5 @@ async def help_command(ctx):
 
 
 # Botu çalıştır
-bot.run('MTQ1OTYyMzUzNTg4NTY4MDY0MA.GJT08m.8-i0QBg2aQiGjSFk_BTV6_-jwOCiIvNjxFvpKs')
+bot.run(
+    'MTQ1OTYyMzUzNTg4NTY4MDY0MA.GJT08m.8-i0QBg2aQiGjSFk_BTV6_-jwOCiIvNjxFvpKs')
